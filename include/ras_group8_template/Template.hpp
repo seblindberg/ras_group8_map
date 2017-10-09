@@ -8,7 +8,7 @@ namespace ras_group8_template {
 class Template
 {
 public:
-  Template(ros::NodeHandle& nodeHandle);
+  Template(ros::NodeHandle& node_handle);
   virtual ~Template();
 
 private:
@@ -17,12 +17,12 @@ private:
 
   /* ROS Objects
    */
-  ros::NodeHandle& nodeHandle_;
+  ros::NodeHandle& node_handle_;
   ros::Subscriber subscriber_;
   
   /* Parameters
    */
-  std::string subscriberTopic_;
+  std::string subscriber_topic_;
 };
 
 } /* namespace */
