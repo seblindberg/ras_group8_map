@@ -36,7 +36,16 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
-catkin_add_gtest(template_tests test/test_template.cpp src/Template.cpp)
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(${PROJECT_NAME}_tests
+    test/test_template.cpp
+    src/Template.cpp
+  )
+  
+  target_link_libraries(${PROJECT_NAME}_tests
+    ${catkin_LIBRARIES}
+  )
+endif()
 
 # Make main executable
 install(
