@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ras_group8_template)
+project(ras_group8_map)
 
 find_package(catkin REQUIRED
   COMPONENTS
   roscpp
-  phidgets
+  nav_msgs
 )
 
 catkin_package(
@@ -13,7 +13,7 @@ catkin_package(
 
   CATKIN_DEPENDS
     roscpp
-    phidgets
+    nav_msgs
 
 # DEPENDS
 )
@@ -24,8 +24,8 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}
-  src/template_node.cpp
-  src/Template.cpp
+  src/map_node.cpp
+  src/Map.cpp
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -38,8 +38,8 @@ target_link_libraries(${PROJECT_NAME}
 
 if (CATKIN_ENABLE_TESTING)
   catkin_add_gtest(${PROJECT_NAME}_tests
-    test/test_template.cpp
-    src/Template.cpp
+    test/test_map.cpp
+    src/Map.cpp
   )
   
   target_link_libraries(${PROJECT_NAME}_tests

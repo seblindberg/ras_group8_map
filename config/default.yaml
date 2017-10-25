@@ -1,1 +1,4 @@
-subscriber_topic: '/topic'
+map_service_topic: 'map'
+map_width: 1024
+map_height: 1024
+map_resolution: 0.025

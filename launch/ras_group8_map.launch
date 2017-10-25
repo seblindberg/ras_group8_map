@@ -1,0 +1,8 @@
+<launch>
+
+  <!-- Launch RAS Group 8 Map Node -->
+  <node pkg="ras_group8_map" type="ras_group8_map" name="ras_group8_map" output="screen">
+    <rosparam command="load" file="$(find ras_group8_map)/config/default.yaml" />
+  </node>
+
+</launch>

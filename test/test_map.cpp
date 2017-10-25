@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ras_group8_template/Template.hpp>
+#include <ras_group8_map/Map.hpp>
 
 int main(int argc, char **argv)
 {
