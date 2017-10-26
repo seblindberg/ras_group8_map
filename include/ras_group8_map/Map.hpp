@@ -25,6 +25,21 @@ public:
     load(ros::NodeHandle& node_handle);
     
 private:
+  int
+    gridCellAt(int row, int col);
+    
+  int
+    gridCellAt(double x, double y);
+  
+  void
+    plot(int row, int col, double p);
+  
+  void
+    drawLine(double x0, double y0, double x1, double y1);
+    
+  void
+    drawLine(double x0, double y0, double x1, double y1, double thickness);
+  
   bool
     mapServiceCallback(nav_msgs::GetMap::Request&  req,
                        nav_msgs::GetMap::Response& res);
@@ -40,7 +55,7 @@ private:
   
   /* Parameters
    */
-
+  const double scale_factor_;
   
   /* Variables
    */
