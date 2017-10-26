@@ -1,12 +1,9 @@
-# RAS Group 8 Map
+# Map
 
-Map used for new packages. The structure is in large part inspired by [this repository](https://github.com/ethz-asl/ros_best_practices).
+This package implements a basic map server and provides both a topic publishing [`nav_msgs::OccupancyGrid`](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html) messages and a [`nav_msgs::GetMap`](http://docs.ros.org/api/nav_msgs/html/srv/GetMap.html) service.
 
-## Using the map
+## TODO
 
-Follow these simple steps to use the map for setting up a new repo.
-
-1. Create a bare repo (no README) on GitHub.
-2. Clone the repo to your computer using `git clone https://github.com/RAS17-Group-8/ras_group8_map`.
-3. `cd` into the cloned directory.
-4. Do a `git push git@github.com:RAS17-Group-8/<repo-name>.git`, making sure you have setup SSH access in your GitHub account settings.
+- [ ] Load the course maze
+- [ ] Some method for updating the map
+- [ ] Implement rostest tests

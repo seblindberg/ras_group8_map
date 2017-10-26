@@ -1,4 +1,5 @@
-map_service_topic: 'map'
-map_width: 1024
-map_height: 1024
-map_resolution: 0.025
+frame_id: "map"
+service_topic: "map"
+width: 512
+height: 512
+resolution: 0.01

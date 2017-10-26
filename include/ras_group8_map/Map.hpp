@@ -2,9 +2,10 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/GetMap.h>
-#include <nav_msgs/OccupancyGrid.h>
 
 namespace ras_group8_map {
+
+#define ERROR_MISSING_PARAMETER 3
 
 class Map
 {
@@ -13,6 +14,8 @@ public:
       int width,
       int height,
       double resolution,
+      const std::string& frame_id,
+      const std::string& map_topic,
       const std::string& service_topic);
   
   virtual
@@ -23,11 +26,13 @@ public:
     
 private:
   bool
-    mapServiceCallback(nav_msgs::GetMap::Request  &req,
-                       nav_msgs::GetMap::Response &res);
+    mapServiceCallback(nav_msgs::GetMap::Request&  req,
+                       nav_msgs::GetMap::Response& res);
   /* ROS Objects
    */
   ros::NodeHandle& node_handle_;
+ 
+  ros::Publisher map_publisher_;
  
   /* Services
    */
@@ -35,15 +40,12 @@ private:
   
   /* Parameters
    */
-  const int width_;
-  const int height_;
-  const double resolution_; // [m/cell]
+
   
   /* Variables
    */
-  nav_msgs::OccupancyGrid map_msg_;
-  
-  int8_t* map_;
+  //nav_msgs::OccupancyGrid map_msg_;
+  nav_msgs::GetMap::Response map_res_;
 };
 
 } /* namespace */
