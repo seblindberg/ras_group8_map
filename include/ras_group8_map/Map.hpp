@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/GetMap.h>
+#include <nav_msgs/SetMap.h>
 
 namespace ras_group8_map {
 
@@ -16,7 +17,8 @@ public:
       double resolution,
       const std::string& frame_id,
       const std::string& map_topic,
-      const std::string& service_topic);
+      const std::string& get_service_topic,
+      const std::string& set_service_topic);
   
   virtual
     ~Map();
@@ -41,8 +43,13 @@ private:
     drawLine(double x0, double y0, double x1, double y1, double thickness);
   
   bool
-    mapServiceCallback(nav_msgs::GetMap::Request&  req,
-                       nav_msgs::GetMap::Response& res);
+    getMapServiceCallback(nav_msgs::GetMap::Request&  req,
+                          nav_msgs::GetMap::Response& res);
+                          
+  bool
+    setMapServiceCallback(nav_msgs::SetMap::Request&  req,
+                          nav_msgs::SetMap::Response& res);
+                          
   /* ROS Objects
    */
   ros::NodeHandle& node_handle_;
@@ -51,7 +58,8 @@ private:
  
   /* Services
    */
-  ros::ServiceServer map_service_;
+  ros::ServiceServer get_map_service_;
+  ros::ServiceServer set_map_service_;
   
   /* Parameters
    */

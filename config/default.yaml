@@ -1,5 +1,6 @@
 frame_id: "map"
 service_topic: "map"
+update_topic: "update"
 width: 512
 height: 512
 resolution: 0.01

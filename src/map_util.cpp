@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <nav_msgs/GetMap.h>
+#include <nav_msgs/SetMap.h>
 #include <ras_group8_util/BMP.hpp>
 
 #include <cstdio>
@@ -7,7 +8,8 @@
 
 #define USAGE "Usage: \n" \
               "  maputil help\n"\
-              "  maputil save [-f <filename>] service_topic"
+              "  maputil save [-f <filename>] service_topic\n" \
+              "  maputil load [-f <filename>] service_topic"
 
 int save(const std::string& service_topic, const std::string& filename)
 {
@@ -42,6 +44,40 @@ int save(const std::string& service_topic, const std::string& filename)
   return 0;
 }
 
+int load(const std::string& service_topic, const std::string& filename)
+{
+  ros::NodeHandle node_handle("~");
+  nav_msgs::SetMap srv;
+  int res;
+  
+  FILE* f = fopen(filename.c_str(), "rb");
+  
+  if (f == NULL) {
+    ROS_ERROR("Failed to open target file");
+    return 1;
+  }
+  
+  if (res = ras_group8_util::BMP::read(&srv.request.map, f)) {
+    ROS_ERROR("Failed to read from file (%i)", res);
+    return 1;
+  }
+  
+  fclose(f);
+
+  /* Set the map */
+  ros::ServiceClient map_client =
+    node_handle.serviceClient<nav_msgs::SetMap>(service_topic);
+  
+  if (map_client.call(srv)) {
+    ROS_INFO("Successfully set the map");
+  } else {
+    ROS_ERROR("Failed to set the map");
+    return 1;
+  }
+
+  return 0;
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ras_group8_map_util");
@@ -60,6 +96,8 @@ int main(int argc, char** argv)
     
   if (argc >= 3 && strcmp(argv[1], "save") == 0) {
     cmd_save = true;
+  } else if (argc >= 3 && strcmp(argv[1], "load") == 0) {
+    cmd_save = false;
   } else {
     puts(USAGE);
     return 1;
@@ -98,6 +136,6 @@ int main(int argc, char** argv)
   if (cmd_save) {
     return save(service_topic, filename);
   } else {
-    return 0;
+    return load(service_topic, filename);
   }
 }

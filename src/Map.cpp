@@ -26,7 +26,8 @@ Map::Map(ros::NodeHandle& node_handle,
          double resolution,
          const std::string& frame_id,
          const std::string& map_topic,
-         const std::string& service_topic)
+         const std::string& get_service_topic,
+         const std::string& set_service_topic)
     : node_handle_(node_handle),
       scale_factor_(1.0 / resolution)
 {
@@ -45,9 +46,15 @@ Map::Map(ros::NodeHandle& node_handle,
   // map_res_.map.info.origin.position
   // map_res_.map.info.origin.orientation
   
-  /* Setup the map service */
-  map_service_ =
-    node_handle_.advertiseService(service_topic, &Map::mapServiceCallback,
+  /* Setup the map services */
+  get_map_service_ =
+    node_handle_.advertiseService(get_service_topic,
+                                  &Map::getMapServiceCallback,
+                                  this);
+                                  
+  set_map_service_ =
+    node_handle_.advertiseService(set_service_topic,
+                                  &Map::setMapServiceCallback,
                                   this);
   
   /* Publish the map */
@@ -67,8 +74,8 @@ Map::~Map()
  * Called by the service server whenever a GetMap request is received. Returns
  * the preset mep response.
  */
-bool Map::mapServiceCallback(nav_msgs::GetMap::Request&  req,
-                             nav_msgs::GetMap::Response& res)
+bool Map::getMapServiceCallback(nav_msgs::GetMap::Request&  req,
+                                nav_msgs::GetMap::Response& res)
 {
   map_res_.map.header.seq  += 1;
   map_res_.map.header.stamp = ros::Time::now();
@@ -77,6 +84,25 @@ bool Map::mapServiceCallback(nav_msgs::GetMap::Request&  req,
      overloaded to do that. */
   res = map_res_;
   
+  return true;
+}
+
+bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
+                                nav_msgs::SetMap::Response& res)
+{
+  /* Copy the map from the response. Apparently operator= is
+     overloaded to do that. */
+  map_res_.map = req.map;
+  
+  /* Consider reseting some of the header fields to known values */
+  //map_res_.map.header.seq = 0;
+  //map_res_.map.info.map_load_time = ros::Time::now();
+  
+  /* Publish the updated map */
+  map_publisher_.publish(map_res_.map);
+  
+  res.success = true;
+
   return true;
 }
 
@@ -246,6 +272,7 @@ void Map::drawLine(double x0, double y0, double x1, double y1, double thickness)
 Map Map::load(ros::NodeHandle& n)
 {
   std::string service_topic;
+  std::string update_topic;
   std::string map_topic;
   std::string frame_id;
   int width;
@@ -263,16 +290,18 @@ Map Map::load(ros::NodeHandle& n)
     exit(ERROR_MISSING_PARAMETER);
   
   /* Load optional parameters */
-  frame_id      = n.param("frame_id", std::string("map"));
-  map_topic     = n.param("map_topic", std::string("map"));
+  frame_id      = n.param("frame_id",      std::string("map"));
+  map_topic     = n.param("map_topic",     std::string("map"));
   service_topic = n.param("service_topic", std::string("map"));
+  update_topic  = n.param("update_topic",  std::string("update"));
   
   Map map(n, width,
              height,
              resolution,
              frame_id,
              map_topic,
-             service_topic);
+             service_topic,
+             update_topic);
   
   return map;
 }
