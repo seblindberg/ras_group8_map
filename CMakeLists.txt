@@ -5,6 +5,7 @@ find_package(catkin REQUIRED
   COMPONENTS
   roscpp
   nav_msgs
+  ras_group8_util
 )
 
 catkin_package(
@@ -14,6 +15,7 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     nav_msgs
+    ras_group8_util
 
 # DEPENDS
 )
@@ -36,20 +38,40 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
+add_executable(maputil
+  src/map_util.cpp
+)
+
+add_dependencies(maputil
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(maputil
+  ras_group8_util_bmp
+  ${catkin_LIBRARIES}
+)
+
 if (CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(${PROJECT_NAME}_tests
-    test/test_map.cpp
-    src/Map.cpp
-  )
+  #catkin_add_gtest(${PROJECT_NAME}_tests
+  #  test/test_map.cpp
+  #  src/Map.cpp
+  #)
   
-  target_link_libraries(${PROJECT_NAME}_tests
-    ${catkin_LIBRARIES}
-  )
+  #target_link_libraries(${PROJECT_NAME}_tests
+  #  ${catkin_LIBRARIES}
+  #)
 endif()
 
 # Make main executable
 install(
   TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(
+  TARGETS maputil
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
