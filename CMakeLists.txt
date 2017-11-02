@@ -5,16 +5,23 @@ find_package(catkin REQUIRED
   COMPONENTS
   roscpp
   nav_msgs
+  visualization_msgs
+  tf
   ras_group8_util
 )
 
 catkin_package(
   INCLUDE_DIRS
     include
+    
+  LIBRARIES
+    ${PROJECT_NAME}_grid
 
   CATKIN_DEPENDS
     roscpp
     nav_msgs
+    visualization_msgs
+    tf
     ras_group8_util
 
 # DEPENDS
@@ -23,6 +30,18 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+)
+
+add_library(${PROJECT_NAME}_grid
+  src/Grid.cpp
+)
+
+add_dependencies(${PROJECT_NAME}_grid
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(${PROJECT_NAME}_grid
+  ${catkin_LIBRARIES}
 )
 
 add_executable(${PROJECT_NAME}
@@ -35,6 +54,19 @@ add_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_init
+  src/map_init.cpp
+)
+
+add_dependencies(${PROJECT_NAME}_init
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(${PROJECT_NAME}_init
+  ${PROJECT_NAME}_grid
   ${catkin_LIBRARIES}
 )
 
@@ -51,6 +83,8 @@ target_link_libraries(maputil
   ${catkin_LIBRARIES}
 )
 
+
+
 if (CATKIN_ENABLE_TESTING)
   #catkin_add_gtest(${PROJECT_NAME}_tests
   #  test/test_map.cpp
@@ -65,6 +99,19 @@ endif()
 # Make main executable
 install(
   TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(
+  TARGETS ${PROJECT_NAME}_grid
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(
+  TARGETS ${PROJECT_NAME}_init
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

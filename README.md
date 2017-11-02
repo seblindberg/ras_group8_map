@@ -16,9 +16,27 @@ To load a saved map, run
 $ rosrun ras_group8_map maputil load -f current_map /ras_group8_map/update
 ```
 
+## Load the Maze
+
+First launch the map and maze packages by running
+
+```
+$ roslaunch ras_group8_map ras_group8_map.launch
+$ roslaunch ras_maze_launch maze_visualize.launch
+```
+
+To see the map in Rviz you simply add a `Map` from the menu and enter `/ras_group8_map/map` as the topic.
+
+Then call
+
+```
+rosrun ras_group8_map ras_group8_map_init
+```
+
+The map should now be populated.
 
 ## TODO
 
-- [ ] Load the course maze
+- [x] Load the course maze
 - [x] Some method for updating the map
 - [ ] Implement rostest tests
