@@ -9,9 +9,16 @@
   <node pkg="ras_maze_map" type="ras_maze_map_node" name="ras_maze_map_node"  >
     <param name="map_file" value="$(find ras_maze_map)/maps/$(arg map_file)"/>
   </node>
+
+  <!-- publish the transform from odom to map frames -->
+  <include file="$(find ras_maze_launch)/launch/static_tf.launch">
+    <arg name="x_offset" value="$(arg x_offset)"/>
+    <arg name="y_offset" value="$(arg y_offset)"/>
+    <arg name="theta_offset" value="$(arg theta_offset)"/>
+  </include>
   
   <!-- Launch RAS Group 8 Map Node -->
-  <node pkg="ras_group8_map" type="ras_group8_map" name="ras_group8_map" output="screen">
+  <node name="map" pkg="ras_group8_map" type="ras_group8_map" output="screen">
     <rosparam command="load" file="$(find ras_group8_map)/config/default.yaml" />
   </node>
   
@@ -20,12 +27,4 @@
 
   <!-- run rviz -->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ras_group8_map)/config/default.rviz" />
-
-  <!-- publish the transform from odom to map frames -->
-  <include file="$(find ras_maze_launch)/launch/static_tf.launch">
-    <arg name="x_offset" value="$(arg x_offset)"/>
-    <arg name="y_offset" value="$(arg y_offset)"/>
-    <arg name="theta_offset" value="$(arg theta_offset)"/>
-  </include>
-
 </launch>

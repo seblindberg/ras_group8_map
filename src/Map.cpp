@@ -19,7 +19,7 @@ Map::Map(ros::NodeHandle& node_handle,
       scale_factor_(1.0 / resolution)
 {
   map_res_.map.info.map_load_time = ros::Time::now();
-  map_res_.map.header.frame_id = frame_id;
+  map_res_.map.header.frame_id = frame_id.c_str();
   map_res_.map.header.seq = 0;
   
   map_res_.map.info.width = width;

@@ -80,7 +80,7 @@ Visualization Manager:
       Length: 1
       Name: Odometry
       Position Tolerance: 0.1
-      Topic: /odom
+      Topic: /odometry/odometry
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
@@ -92,7 +92,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Map
       Enabled: true
-      Topic: /ras_group8_map/map
+      Topic: /map/map
       Name: Map
     - Class: rviz/Axes
       Enabled: true

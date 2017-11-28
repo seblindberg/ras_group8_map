@@ -63,9 +63,9 @@ int main(int argc, char** argv)
   const std::string marker_topic =
     node_handle.param("marker_topic",      std::string("/maze_map"));
   const std::string get_service_topic =
-    node_handle.param("get_service_topic", std::string("/ras_group8_map/map"));
+    node_handle.param("get_service_topic", std::string("/map/map"));
   const std::string set_service_topic =
-    node_handle.param("set_service_topic", std::string("/ras_group8_map/update"));
+    node_handle.param("set_service_topic", std::string("/map/update"));
   
   /* Get the map in its current form */
   {
