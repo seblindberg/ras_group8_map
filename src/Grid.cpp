@@ -1,5 +1,6 @@
 #include <ras_group8_map/Grid.hpp>
 #include <math.h>
+#include <ros/ros.h>
 
 namespace ras_group8_map {
 
@@ -129,6 +130,269 @@ Grid::drawPoint(nav_msgs::OccupancyGrid& grid,
                 double x, double y, double p = 1.0)
 {
   /* TODO: implement point drawing */
+}
+
+nav_msgs::OccupancyGrid
+Grid::downsample(const nav_msgs::OccupancyGrid& grid, int n)
+{
+  const int source_width  = grid.info.width;
+  const int source_height = grid.info.height;
+  const int target_width  = ceil((double) source_width / n);
+  const int target_height = ceil((double) source_height / n);
+  const int n_padding     = n - (target_width * n - source_width);
+ 
+  /* Setup the down sampled grid */
+  nav_msgs::OccupancyGrid target;
+  
+  target.info.width  = target_width;
+  target.info.height = target_height;
+  target.info.resolution = grid.info.resolution / n;
+  
+  target.data.resize(target_width * target_height);
+  
+  /* Each row in the down sampled grid will be made up by a
+     square of cells from the original. We can call them
+     
+     +------+------+------+------+------+------+
+     | 2w+0 | 2w+1 | 2w+2 | 2w+3 | 2w+4 | 2w+5 |
+     +------+------+------+------+------+------+
+     |  w+0 |  w+1 |  w+2 |  w+3 |  w+4 |  w+5 | ...
+     +------+------+------+------+------+------+
+     |    0 |    1 |    2 |    3 |    4 |    5 |
+     +------+------+------+------+------+------+
+     
+   */
+  for (int r_target = 0; r_target < target_height; r_target ++) {
+    const int target_row_offset = r_target * target_width;
+    int source_row_offset = n * r_target * source_width;
+    
+    /* Initialize with the value of the cells in the lower
+       left corner */
+    int c_source = 0;
+    for (int c_target = 0; c_target < target_width; c_target ++) {
+      target.data[target_row_offset + c_target] =
+        grid.data[source_row_offset + c_source];
+      c_source += n; /* 0, n, 2n, ... */
+    }
+    
+    /* Do the rest of the cells in the first row */
+    for (int o = 1; o < n; o ++) {
+      c_source = o;
+      int c_target;
+      for (c_target = 0; c_target < target_width - 1; c_target ++) {
+        target.data[target_row_offset + c_target] =
+          std::max(target.data[target_row_offset + c_target],
+                   grid.data[source_row_offset + c_source]);
+        c_source += n; /* o, n+o, 2n+o, ... o = [1,n) */
+      }
+    
+      /* Do the last cell unless it actually does not exist
+         in the source grid */
+      if (o < n_padding) {
+        target.data[target_row_offset + c_target] =
+          std::max(target.data[target_row_offset + c_target],
+                   grid.data[source_row_offset + c_source]);
+      }
+    }
+    
+    /* Do the other n-1 rows */
+    for (int r_source = 1; r_source < n; r_source ++) {
+      source_row_offset += source_width;
+      for (int o = 0; o < n; o ++) {
+        c_source = o;
+        int c_target;
+        for (c_target = 0; c_target < target_width; c_target ++) {
+          target.data[target_row_offset + c_target] =
+            std::max(target.data[target_row_offset + c_target],
+                     grid.data[source_row_offset + c_source]);
+          c_source += n; /* o, n+o, 2n+o, ... o = [0,n) */
+        }
+    
+        /* Do the last cell unless it actually does not exist
+           in the source grid */
+        if (o < n_padding) {
+          target.data[target_row_offset + c_target] =
+            std::max(target.data[target_row_offset + c_target],
+                     grid.data[source_row_offset + c_source]);
+        }
+      }
+    }
+  }
+  
+  return target;
+}
+
+sensor_msgs::LaserScan
+Grid::simulateLaserScan(const nav_msgs::OccupancyGrid& grid,
+                  const double x, const double y, const double theta,
+                  const int steps)
+{
+  const int width    = grid.info.width;
+  const int height   = grid.info.height;
+  const int grid_len = grid.data.size();
+  const double cell_width = grid.info.resolution; /* [m/cell] */
+  const double cell_center_offset = cell_width / 2;
+  const double angle_increment = 2*M_PI / (steps + 1);
+  const double range_index_scale = 1.0 / angle_increment;
+  
+  /* Our cell coordinates in the grid
+     Assume we are within the grid for now */
+  const double c0_real = x / cell_width;
+  const double r0_real = y / cell_width;
+  
+  const int c0 = round(c0_real); /* Assume we are in the center of our cell */
+  const int r0 = round(c0_real);
+  
+  sensor_msgs::LaserScan scan;
+  
+  scan.angle_increment = angle_increment;
+  scan.angle_min = 0.0;
+  scan.angle_max = angle_increment * steps;
+  
+  scan.range_min = 0.01; /* TODO: Should be > 0 */
+  scan.range_max = 10.0; /* TODO: Ok to set arbitrary value? */
+  
+  scan.ranges.resize(steps);
+  
+  /* Perform ray-tracing */
+  for (int i = 0; i < steps; i ++) {
+    const double alpha = i * angle_increment;
+    const double phi   = theta + alpha;
+    
+    const bool steep =
+      (phi > (  M_PI / 4) && phi < (3*M_PI / 4))
+                                || (phi > (5*M_PI / 4) && phi < (7*M_PI / 4));
+
+    const double cos_phi = cos(phi);
+    const double sin_phi = sin(phi);
+    
+    // ROS_INFO("cos_phi = %f, sin_phi = %f", cos_phi, sin_phi);
+    
+    if (steep) {
+      const double d_grad  = 1.0 / sin_phi;
+      
+      if (sin_phi >= 0) {
+        for (int r = 1; r < height - r0; r ++) {
+          /* Distance to the cell in cell units */
+          const double d = r * d_grad;
+          const int c = (int) (d * cos_phi);
+          
+          if (c >= width) {
+            scan.ranges[i] = d * cell_width;
+            break;
+          }
+                  
+          const int index = (r + r0) * width + (c + c0);
+          
+          if (grid.data[index] > 0) {
+            scan.ranges[i] = d * cell_width;
+            break; /* Leave the loop */
+          }
+        }
+      } else {
+        for (int r = 0; r < r0; r ++) {
+          /* Distance to the cell in cell units */
+          const double d = r * d_grad;
+          const int c = (int) (d * cos_phi);
+          
+          if (c >= width) {
+            scan.ranges[i] = d * cell_width;
+            break;
+          }
+                  
+          const int index = (-r + r0) * width + (c + c0);
+          
+          if (grid.data[index] > 0) {
+            scan.ranges[i] = d * cell_width;
+            break; /* Leave the loop */
+          }
+        }
+      }
+    } else {
+      const double d_grad = 1.0 / cos_phi; /* How d changes for cells */
+      
+      if (cos_phi >= 0) {
+        for (int c = 1; c < width - c0; c ++) {
+          /* Distance to the cell */
+          const double d = c * d_grad;
+          const int r = (int) (d * sin_phi);
+          
+          if (r >= height) {
+            scan.ranges[i] = d * cell_width;
+            break;
+          }
+          
+          const int index = (r + r0) * width + (c + c0);
+          
+          if (grid.data[index] > 0) {
+            scan.ranges[i] = d * cell_width;
+            break; /* Leave the loop */
+          }
+        }
+      } else {
+        for (int c = 1; c < c0; c ++) {
+          /* Distance to the cell */
+          const double d = -c * d_grad;
+          const int r = (int) (d * sin_phi);
+          
+          if (r >= height) {
+            scan.ranges[i] = d * cell_width;
+            break;
+          }
+          
+          const int index = (r + r0) * width + (-c + c0);
+          
+          if (grid.data[index] > 0) {
+            scan.ranges[i] = d * cell_width;
+            break; /* Leave the loop */
+          }
+        }
+      }
+    }
+  }
+  
+  /* Iterate over every grid cell */
+  // for (int i = 0; i < grid_len; i ++) {
+  //   const char p = grid.data[i];
+  //   /* Skip if the cell is not occupied */
+  //   if (p < 1) {
+  //     continue;
+  //   }
+  //
+  //   const int    r = i / width;
+  //   const int    c = i % width;
+  //
+  //   /* Get the world coordinates of the center of this cell */
+  //   const double xi = cell_width * c + cell_center_offset;
+  //   const double yi = cell_width * r + cell_center_offset;
+  //
+  //   const double dx = xi - x;
+  //   const double dy = yi - y;
+  //
+  //   /* Calculate the angle relative to our position */
+  //   const double phi = atan2(dy, dx);
+  //
+  //   /* Calculate the angle in the frame for the laser scanner */
+  //   const double alpha = phi - theta;
+  //   int          range_index = round(alpha * range_index_scale);
+  //
+  //   if (range_index >= steps) {
+  //     ROS_ASSERT(range_index == steps);
+  //     range_index = 0;
+  //   }
+  //
+  //   const double d = sqrtf(dx*dx + dy*dy);
+  //
+  //   ROS_INFO("dx = %f", dx);
+  //   ROS_INFO("dy = %f", dy);
+  //   ROS_INFO("d = %f", d);
+  //
+  //   if (d < scan.ranges[range_index]) {
+  //     scan.ranges[range_index] = d;
+  //   }
+  // }
+  
+  return scan;
 }
 
 int

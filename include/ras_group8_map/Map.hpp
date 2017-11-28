@@ -3,6 +3,8 @@
 #include <ros/ros.h>
 #include <nav_msgs/GetMap.h>
 #include <nav_msgs/SetMap.h>
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/LaserScan.h>
 
 namespace ras_group8_map {
 
@@ -26,7 +28,7 @@ public:
   static Map
     load(ros::NodeHandle& node_handle);
     
-private:  
+private:
   bool
     getMapServiceCallback(nav_msgs::GetMap::Request&  req,
                           nav_msgs::GetMap::Response& res);
@@ -35,6 +37,12 @@ private:
     setMapServiceCallback(nav_msgs::SetMap::Request&  req,
                           nav_msgs::SetMap::Response& res);
                           
+  // void
+  //   pointCloudCallback(sensor_msgs::PointCloud& point_cloud);
+  
+  // void
+  //   laserScanCallback(sensor_msgs::LaserScan& laser_scan);
+          
   /* ROS Objects
    */
   ros::NodeHandle& node_handle_;
@@ -45,6 +53,11 @@ private:
    */
   ros::ServiceServer get_map_service_;
   ros::ServiceServer set_map_service_;
+  
+  /* Subscribers
+   */
+  ros::Subscriber point_subscriber_;
+  ros::Subscriber laser_subscriber_;
   
   /* Parameters
    */

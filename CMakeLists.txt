@@ -6,6 +6,7 @@ find_package(catkin REQUIRED
   roscpp
   nav_msgs
   visualization_msgs
+  sensor_msgs
   tf
   ras_group8_util
 )
@@ -21,6 +22,7 @@ catkin_package(
     roscpp
     nav_msgs
     visualization_msgs
+    sensor_msgs
     tf
     ras_group8_util
 
@@ -31,6 +33,10 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
+
+#
+# Grid
+#
 
 add_library(${PROJECT_NAME}_grid
   src/Grid.cpp
@@ -43,6 +49,21 @@ add_dependencies(${PROJECT_NAME}_grid
 target_link_libraries(${PROJECT_NAME}_grid
   ${catkin_LIBRARIES}
 )
+
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(${PROJECT_NAME}_grid_tests
+    test/test_grid.cpp
+  )
+
+  target_link_libraries(${PROJECT_NAME}_grid_tests
+    ${PROJECT_NAME}_grid
+    ${catkin_LIBRARIES}
+  )
+endif()
+
+#
+# Map Node
+#
 
 add_executable(${PROJECT_NAME}
   src/map_node.cpp

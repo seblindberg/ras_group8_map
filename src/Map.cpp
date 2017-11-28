@@ -44,6 +44,12 @@ Map::Map(ros::NodeHandle& node_handle,
                                   &Map::setMapServiceCallback,
                                   this);
   
+  // point_subscriber_ =
+  //   node_handle_.subscribe("points", 1, &Map::pointCloudCallback, this);
+    
+  // laser_subscriber_ =
+  //   node_handle_.subscribe("points", 1, &Map::laserScanCallback, this);
+  
   /* Publish the map */
   map_publisher_ =
     node_handle_.advertise<nav_msgs::OccupancyGrid>(map_topic, 1, true);
@@ -92,6 +98,61 @@ bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
 
   return true;
 }
+
+/* Point Cloud Callback
+ *
+ * Update the map with a point cloud
+ */
+// void Map::pointCloudCallback(sensor_msgs::PointCloud& point_cloud)
+// {
+  // const int points_len   = point_cloud.points.size();
+  // const int channels_len = point_cloud.channels.size();
+  // int p_channel_i        = -1;
+  
+  /* TODO: Find the point_cloud.channel with the probability */
+  // for (int i = 0; i < channels_len; i ++) {
+  //   if (point_cloud.channels[i].name.compare("p") == 0) {
+  //     p_channel_i = i;
+  //     break;
+  //   }
+  // }
+  
+  // if (p_channel_i == -1) {
+  //   ROS_ERROR("Could not find point probability channel in point cloud message");
+  //   return;
+  // }
+  
+  // for (int i = 0; i < points_len; i ++) {
+  //   const double p = point_cloud.channels[p_channel_i][i];
+  //   const double x = point_cloud.points[i].x;
+  //   const double y = point_cloud.points[i].y;
+  //
+  //   ROS_INFO("Received point (%f, %f): %f", x, y, p);
+  // }
+// }
+
+/* Laser Cloud Callback
+ *
+ * We don't want to say anything about the circle around our current location
+ * with radius range_min.
+ *
+ * For each point we read
+ */
+// void Map::laserScanCallback(sensor_msgs::LaserScan& laser_scan)
+// {
+  // const double angle_increment = laser_scan.angle_increment;
+  // const double range_min       = laser_scan.range_min;
+  // const double range_max       = laser_scan.range_max;
+  // const int ranges_len         = laser_scan.ranges.size();
+  //
+  // /* Get our current location from localization */
+  //
+  //
+  // /* Iterate over the ranges */
+  // for (int i = 0; i < ranges_len; i ++) {
+  //   const double r = laser_scan.ranges[i];
+  // }
+// }
 
 Map Map::load(ros::NodeHandle& n)
 {
