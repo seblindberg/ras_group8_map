@@ -222,6 +222,10 @@ Grid::downsample(const nav_msgs::OccupancyGrid& grid, int n)
   return target;
 }
 
+/* Simulate Laser Scan
+ *
+ * Node: This is currently not working
+ */
 sensor_msgs::LaserScan
 Grid::simulateLaserScan(const nav_msgs::OccupancyGrid& grid,
                   const double x, const double y, const double theta,
