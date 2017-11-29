@@ -69,6 +69,8 @@ int main(int argc, char** argv)
   
   /* Get the map in its current form */
   {
+    ros::service::waitForService(get_service_topic, 10);
+    
     nav_msgs::GetMap get_srv;
     ros::ServiceClient map_client =
       node_handle.serviceClient<nav_msgs::GetMap>(get_service_topic);
@@ -79,7 +81,8 @@ int main(int argc, char** argv)
     }
     
     /* Copy the map info */
-    set_srv.request.map.info = get_srv.response.map.info;
+    set_srv.request.map.header = get_srv.response.map.header;
+    set_srv.request.map.info   = get_srv.response.map.info;
     set_srv.request.map.data.resize(get_srv.response.map.data.size());
     
   }

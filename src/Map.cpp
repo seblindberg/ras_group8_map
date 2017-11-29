@@ -16,7 +16,8 @@ Map::Map(ros::NodeHandle& node_handle,
          const std::string& get_service_topic,
          const std::string& set_service_topic)
     : node_handle_(node_handle),
-      scale_factor_(1.0 / resolution)
+      scale_factor_(1.0 / resolution),
+      frame_id_(frame_id)
 {
   map_res_.map.info.map_load_time = ros::Time::now();
   map_res_.map.header.frame_id = frame_id.c_str();
@@ -88,8 +89,9 @@ bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
   map_res_.map = req.map;
   
   /* Consider reseting some of the header fields to known values */
-  //map_res_.map.header.seq = 0;
-  //map_res_.map.info.map_load_time = ros::Time::now();
+  map_res_.map.header.seq = 0;
+  map_res_.map.info.map_load_time = ros::Time::now();
+  map_res_.map.header.frame_id = frame_id_;
   
   /* Publish the updated map */
   map_publisher_.publish(map_res_.map);

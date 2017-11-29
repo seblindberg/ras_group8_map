@@ -62,6 +62,7 @@ private:
   /* Parameters
    */
   const double scale_factor_;
+  const std::string frame_id_;
   
   /* Variables
    */

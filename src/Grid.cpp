@@ -146,7 +146,7 @@ Grid::downsample(const nav_msgs::OccupancyGrid& grid, int n)
   
   target.info.width  = target_width;
   target.info.height = target_height;
-  target.info.resolution = grid.info.resolution / n;
+  target.info.resolution = grid.info.resolution * n; // [m/cell]
   
   target.data.resize(target_width * target_height);
   
