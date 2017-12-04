@@ -115,7 +115,7 @@ bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
 void
 Map::markerArrayCallback(const visualization_msgs::MarkerArray& marker_array)
 {
-  Grid::drawMarkerArray(map_res_.map, marker_array, 0.7);
+  Grid::drawMarkerArray(map_res_.map, marker_array, 0.9);
 }
 
 void

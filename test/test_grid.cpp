@@ -69,12 +69,12 @@ TEST(Grid, test_draw_circle)
   nav_msgs::OccupancyGrid grid;
   int res;
   
-  grid.data.resize(100);
-  grid.info.with = 10;
-  grid.info.height = 10;
+  grid.data.resize(10000);
+  grid.info.width  = 100;
+  grid.info.height = 100;
   grid.info.resolution = 1;
   
-  Grid::drawCircle(grid, 5, 5, 2, 0.7);
+  Grid::drawCircle(grid, 40, 60, 35, 0.7);
   
   FILE* f = fopen("/home/ras/catkin/grid_test_draw_cirlce.bmp", "wb");
   if (res = ras_group8_util::BMP::write(grid, f)) {

@@ -24,6 +24,10 @@ static inline int
   
 static void
   plot(int row, int col, double p, nav_msgs::OccupancyGrid& grid);
+  
+static void
+  drawLineHFast(int row, int col_0, int col_1, double p,
+                nav_msgs::OccupancyGrid& grid);
 
 static inline void
   drawLineMarker(nav_msgs::OccupancyGrid& grid,
@@ -152,9 +156,9 @@ Grid::drawCircle(nav_msgs::OccupancyGrid& grid,
   r_f *= scale_factor;
   
   /* Round everything */
-  int x0 = round(x0);
-  int y0 = round(x0);
-  int r  = round(x0);
+  int x0 = round(x0_f);
+  int y0 = round(y0_f);
+  int r  = round(r_f);
   
   int x = r - 1;
   int y = 0;
@@ -164,28 +168,29 @@ Grid::drawCircle(nav_msgs::OccupancyGrid& grid,
   
   while (x >= y)
   {
-    plot(x0 - x, y0 + y, p, grid);
-    plot(x0 + x, y0 + y, p, grid);
+    // plot(x0 - x, y0 + y, p, grid);
+    // plot(x0 + x, y0 + y, p, grid);
+    drawLineHFast(y0 + y, x0 - x, x0 + x, p, grid);
+        
+    // plot(x0 - y, y0 + x, p, grid);
+    // plot(x0 + y, y0 + x, p, grid);
+    drawLineHFast(y0 + x, x0 - y, x0 + y, p, grid);
     
-    plot(x0 - y, y0 + x, p, grid);
-    plot(x0 + y, y0 + x, p, grid);
+    // plot(x0 - x, y0 - y, p, grid);
+    // plot(x0 + x, y0 - y, p, grid);
+    drawLineHFast(y0 - y, x0 - x, x0 + x, p, grid);
     
-    plot(x0 - x, y0 - y, p, grid);
-    plot(x0 + x, y0 - y, p, grid);
-    
-    plot(x0 - y, y0 - x, p, grid);
-    plot(x0 + y, y0 - x, p, grid);
-    
+    // plot(x0 - y, y0 - x, p, grid);
+    // plot(x0 + y, y0 - x, p, grid);
+    drawLineHFast(y0 - x, x0 - y, x0 + y, p, grid);
 
-    if (err <= 0)
-    {
+    if (err <= 0) {
         y++;
         err += dy;
         dy += 2;
     }
     
-    if (err > 0)
-    {
+    if (err > 0) {
         x--;
         dx += 2;
         err += dx - (r << 1);
@@ -625,6 +630,15 @@ plot(int row, int col, double p, nav_msgs::OccupancyGrid& grid)
   }
   
   grid.data[cell_index] = q;
+}
+
+void
+drawLineHFast(int row, int col_0, int col_1, double p,
+              nav_msgs::OccupancyGrid& grid)
+{
+  for (int col = col_0; col <= col_1; col++) {
+    plot(row, col, p, grid);
+  }
 }
 
 }
