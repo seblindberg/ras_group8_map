@@ -1,6 +1,7 @@
 #include <ras_group8_map/Grid.hpp>
 #include <math.h>
 #include <ros/ros.h>
+#include <tf/LinearMath/Matrix3x3.h>
 
 namespace ras_group8_map {
 
@@ -130,6 +131,45 @@ Grid::drawPoint(nav_msgs::OccupancyGrid& grid,
                 double x, double y, double p = 1.0)
 {
   /* TODO: implement point drawing */
+}
+
+void
+Grid::drawMarkerArray(nav_msgs::OccupancyGrid& grid,
+                      const visualization_msgs::MarkerArray& marker_array,
+                      double p)
+{
+  const int num_markers = marker_array.markers.size();
+  
+  /* Draw the lines in the grid */
+  for (int i = 0; i < num_markers; i ++) {
+    const visualization_msgs::Marker* marker = &marker_array.markers[i];
+    
+    /* Get the angle, distance and x,y coordinates for the
+       marker and work out the (x0,y0) and (x1,y1)
+       coordinates from that */
+    const double d = marker->scale.x / 2.0;
+    const double x = marker->pose.position.x;
+    const double y = marker->pose.position.y;
+    double a;
+    double tmp;
+    
+    const tf::Quaternion q(marker->pose.orientation.x,
+                           marker->pose.orientation.y,
+                           marker->pose.orientation.z,
+                           marker->pose.orientation.w);
+    
+    tf::Matrix3x3(q).getEulerYPR(a, tmp, tmp);
+    
+    const double d_cos_a = d * cos(a);
+    const double d_sin_a = d * sin(a);
+    
+    const double x0 = x - d_cos_a;
+    const double y0 = y - d_sin_a;
+    const double x1 = x + d_cos_a;
+    const double y1 = y + d_sin_a;
+    
+    drawLine(grid, x0, y0, x1, y1, p);
+  }
 }
 
 nav_msgs::OccupancyGrid

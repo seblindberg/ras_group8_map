@@ -75,7 +75,6 @@ add_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  ${PROJECT_NAME}_grid
   ${catkin_LIBRARIES}
 )
 

@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <sensor_msgs/LaserScan.h>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace ras_group8_map {
 
@@ -23,7 +24,12 @@ public:
   static void
     drawPoint(nav_msgs::OccupancyGrid& grid,
               double x, double y, double p);
-              
+
+  static void
+    drawMarkerArray(nav_msgs::OccupancyGrid& grid,
+                    const visualization_msgs::MarkerArray& marker_array,
+                    double p);
+
   static sensor_msgs::LaserScan
     simulateLaserScan(const nav_msgs::OccupancyGrid& grid,
                       double x, double y, double theta, int resolution);

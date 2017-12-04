@@ -5,6 +5,7 @@
 #include <nav_msgs/SetMap.h>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/LaserScan.h>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace ras_group8_map {
 
@@ -20,7 +21,8 @@ public:
       const std::string& frame_id,
       const std::string& map_topic,
       const std::string& get_service_topic,
-      const std::string& set_service_topic);
+      const std::string& set_service_topic,
+      const std::string& marker_topic);
   
   virtual
     ~Map();
@@ -37,8 +39,16 @@ private:
     setMapServiceCallback(nav_msgs::SetMap::Request&  req,
                           nav_msgs::SetMap::Response& res);
                           
+  void
+    markerArrayCallback(const visualization_msgs::MarkerArray& msg);
+    
+  void
+    odomCallback(const nav_msgs::Odometry& msg);
+                          
   // void
   //   pointCloudCallback(sensor_msgs::PointCloud& point_cloud);
+  
+  
   
   // void
   //   laserScanCallback(sensor_msgs::LaserScan& laser_scan);
@@ -56,8 +66,11 @@ private:
   
   /* Subscribers
    */
+  ros::Subscriber odom_subscriber_;
   ros::Subscriber point_subscriber_;
   ros::Subscriber laser_subscriber_;
+  
+  ros::Subscriber marker_subscriber_;
   
   /* Parameters
    */

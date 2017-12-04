@@ -1,5 +1,6 @@
 #include <ras_group8_map/Map.hpp>
 #include <nav_msgs/OccupancyGrid.h>
+#include <ras_group8_map/Grid.hpp>
 
 // STD
 #include <string>
@@ -14,7 +15,8 @@ Map::Map(ros::NodeHandle& node_handle,
          const std::string& frame_id,
          const std::string& map_topic,
          const std::string& get_service_topic,
-         const std::string& set_service_topic)
+         const std::string& set_service_topic,
+         const std::string& marker_topic)
     : node_handle_(node_handle),
       scale_factor_(1.0 / resolution),
       frame_id_(frame_id)
@@ -45,8 +47,16 @@ Map::Map(ros::NodeHandle& node_handle,
                                   &Map::setMapServiceCallback,
                                   this);
   
+  marker_subscriber_ =
+    node_handle_.subscribe(marker_topic, 1, &Map::markerArrayCallback, this);
+  
   // point_subscriber_ =
   //   node_handle_.subscribe("points", 1, &Map::pointCloudCallback, this);
+    
+  /* Listen to updates from the odometry. */
+  odom_subscriber_ =
+    node_handle_.subscribe(odom_topic, 1,
+                           &Map::odomCallback, this);
     
   // laser_subscriber_ =
   //   node_handle_.subscribe("points", 1, &Map::laserScanCallback, this);
@@ -99,6 +109,18 @@ bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
   res.success = true;
 
   return true;
+}
+
+void
+Map::markerArrayCallback(const visualization_msgs::MarkerArray& marker_array)
+{
+  Grid::drawMarkerArray(map_res_.map, marker_array, 0.7);
+}
+
+void
+Map::odomCallback(const nav_msgs::Odometry& msg)
+{
+  
 }
 
 /* Point Cloud Callback
@@ -161,6 +183,7 @@ Map Map::load(ros::NodeHandle& n)
   std::string service_topic;
   std::string update_topic;
   std::string map_topic;
+  std::string marker_topic;
   std::string frame_id;
   int width;
   int height;
@@ -181,6 +204,7 @@ Map Map::load(ros::NodeHandle& n)
   map_topic     = n.param("map_topic",     std::string("map"));
   service_topic = n.param("service_topic", std::string("map"));
   update_topic  = n.param("update_topic",  std::string("update"));
+  marker_topic  = n.param("marker_topic",  std::string("markers"));
   
   Map map(n, width,
              height,
@@ -188,7 +212,8 @@ Map Map::load(ros::NodeHandle& n)
              frame_id,
              map_topic,
              service_topic,
-             update_topic);
+             update_topic,
+             marker_topic);
   
   return map;
 }

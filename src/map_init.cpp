@@ -14,6 +14,7 @@ static bool map_ok = false;
 void
 markerCallback(const visualization_msgs::MarkerArray& marker_array)
 {
+  /* TODO: Replace with Grid::drawMarkerArray */
   const int num_markers = marker_array.markers.size();
   
   /* Draw the lines in the grid */
@@ -44,7 +45,7 @@ markerCallback(const visualization_msgs::MarkerArray& marker_array)
     const double x1 = x + d_cos_a;
     const double y1 = y + d_sin_a;
     
-    Grid::drawLine(set_srv.request.map, x0, y0, x1, y1, 1.0);
+    Grid::drawLine(set_srv.request.map, x0, y0, x1, y1, 0.9);
     
     ROS_INFO("Drawing line (%f,%f) --- (%f,%f)", x0, y0, x1, y1);
   }
