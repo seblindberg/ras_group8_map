@@ -1,6 +1,7 @@
 #include <ras_group8_map/Grid.hpp>
 #include <math.h>
 #include <ros/ros.h>
+#include <visualization_msgs/Marker.h>
 #include <tf/LinearMath/Matrix3x3.h>
 
 namespace ras_group8_map {
@@ -23,6 +24,19 @@ static inline int
   
 static void
   plot(int row, int col, double p, nav_msgs::OccupancyGrid& grid);
+
+static inline void
+  drawLineMarker(nav_msgs::OccupancyGrid& grid,
+                 const visualization_msgs::Marker& marker,
+                 double p);
+  
+static inline void
+  drawCircleMarker(nav_msgs::OccupancyGrid& grid,
+                   const visualization_msgs::Marker& marker,
+                   double p);
+
+/* SPHERE = 2
+ */
 
 /* Draw Line
  *
@@ -127,6 +141,59 @@ Grid::drawLine(nav_msgs::OccupancyGrid& grid,
 }
 
 void
+Grid::drawCircle(nav_msgs::OccupancyGrid& grid,
+                 double x0_f, double y0_f, double r_f, double p)
+{
+  const double scale_factor = 1.0 / grid.info.resolution;
+  
+  /* Scale everything */
+  x0_f *= scale_factor;
+  y0_f *= scale_factor;
+  r_f *= scale_factor;
+  
+  /* Round everything */
+  int x0 = round(x0);
+  int y0 = round(x0);
+  int r  = round(x0);
+  
+  int x = r - 1;
+  int y = 0;
+  int dx = 1;
+  int dy = 1;
+  int err = dx - (r << 1);
+  
+  while (x >= y)
+  {
+    plot(x0 - x, y0 + y, p, grid);
+    plot(x0 + x, y0 + y, p, grid);
+    
+    plot(x0 - y, y0 + x, p, grid);
+    plot(x0 + y, y0 + x, p, grid);
+    
+    plot(x0 - x, y0 - y, p, grid);
+    plot(x0 + x, y0 - y, p, grid);
+    
+    plot(x0 - y, y0 - x, p, grid);
+    plot(x0 + y, y0 - x, p, grid);
+    
+
+    if (err <= 0)
+    {
+        y++;
+        err += dy;
+        dy += 2;
+    }
+    
+    if (err > 0)
+    {
+        x--;
+        dx += 2;
+        err += dx - (r << 1);
+    }
+  }
+}
+
+void
 Grid::drawPoint(nav_msgs::OccupancyGrid& grid,
                 double x, double y, double p = 1.0)
 {
@@ -144,32 +211,85 @@ Grid::drawMarkerArray(nav_msgs::OccupancyGrid& grid,
   for (int i = 0; i < num_markers; i ++) {
     const visualization_msgs::Marker* marker = &marker_array.markers[i];
     
-    /* Get the angle, distance and x,y coordinates for the
-       marker and work out the (x0,y0) and (x1,y1)
-       coordinates from that */
-    const double d = marker->scale.x / 2.0;
-    const double x = marker->pose.position.x;
-    const double y = marker->pose.position.y;
-    double a;
-    double tmp;
+    switch (marker->type) {
+      case 2:
+        drawCircleMarker(grid, *marker, p);
+        break;
+        
+      default:
+        drawLineMarker(grid, *marker, p);
+    }
     
-    const tf::Quaternion q(marker->pose.orientation.x,
-                           marker->pose.orientation.y,
-                           marker->pose.orientation.z,
-                           marker->pose.orientation.w);
-    
-    tf::Matrix3x3(q).getEulerYPR(a, tmp, tmp);
-    
-    const double d_cos_a = d * cos(a);
-    const double d_sin_a = d * sin(a);
-    
-    const double x0 = x - d_cos_a;
-    const double y0 = y - d_sin_a;
-    const double x1 = x + d_cos_a;
-    const double y1 = y + d_sin_a;
-    
-    drawLine(grid, x0, y0, x1, y1, p);
+    // /* Get the angle, distance and x,y coordinates for the
+    //    marker and work out the (x0,y0) and (x1,y1)
+    //    coordinates from that */
+    // const double d = marker->scale.x / 2.0;
+    // const double x = marker->pose.position.x;
+    // const double y = marker->pose.position.y;
+    // double a;
+    // double tmp;
+    //
+    // const tf::Quaternion q(marker->pose.orientation.x,
+    //                        marker->pose.orientation.y,
+    //                        marker->pose.orientation.z,
+    //                        marker->pose.orientation.w);
+    //
+    // tf::Matrix3x3(q).getEulerYPR(a, tmp, tmp);
+    //
+    // const double d_cos_a = d * cos(a);
+    // const double d_sin_a = d * sin(a);
+    //
+    // const double x0 = x - d_cos_a;
+    // const double y0 = y - d_sin_a;
+    // const double x1 = x + d_cos_a;
+    // const double y1 = y + d_sin_a;
+    //
+    // drawLine(grid, x0, y0, x1, y1, p);
   }
+}
+
+void
+drawLineMarker(nav_msgs::OccupancyGrid& grid,
+               const visualization_msgs::Marker& marker,
+               double p)
+{
+  /* Get the angle, distance and x,y coordinates for the
+     marker and work out the (x0,y0) and (x1,y1)
+     coordinates from that */
+  const double d = marker.scale.x / 2.0;
+  const double x = marker.pose.position.x;
+  const double y = marker.pose.position.y;
+  double a;
+  double tmp;
+  
+  const tf::Quaternion q(marker.pose.orientation.x,
+                         marker.pose.orientation.y,
+                         marker.pose.orientation.z,
+                         marker.pose.orientation.w);
+  
+  tf::Matrix3x3(q).getEulerYPR(a, tmp, tmp);
+  
+  const double d_cos_a = d * cos(a);
+  const double d_sin_a = d * sin(a);
+  
+  const double x0 = x - d_cos_a;
+  const double y0 = y - d_sin_a;
+  const double x1 = x + d_cos_a;
+  const double y1 = y + d_sin_a;
+  
+  Grid::drawLine(grid, x0, y0, x1, y1, p);
+}
+
+void
+drawCircleMarker(nav_msgs::OccupancyGrid& grid,
+                 const visualization_msgs::Marker& marker,
+                 double p)
+{
+  const double r = marker.scale.x;
+  const double x = marker.pose.position.x;
+  const double y = marker.pose.position.y;
+  
+  Grid::drawCircle(grid, x, y, r, p);
 }
 
 nav_msgs::OccupancyGrid

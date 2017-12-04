@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/GetMap.h>
 #include <nav_msgs/SetMap.h>
+#include <nav_msgs/Odometry.h>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -22,7 +23,8 @@ public:
       const std::string& map_topic,
       const std::string& get_service_topic,
       const std::string& set_service_topic,
-      const std::string& marker_topic);
+      const std::string& marker_topic,
+      const std::string& odom_topic);
   
   virtual
     ~Map();
@@ -55,9 +57,9 @@ private:
           
   /* ROS Objects
    */
-  ros::NodeHandle& node_handle_;
+  ros::NodeHandle&   node_handle_;
  
-  ros::Publisher map_publisher_;
+  ros::Publisher     map_publisher_;
  
   /* Services
    */
@@ -81,6 +83,7 @@ private:
    */
   //nav_msgs::OccupancyGrid map_msg_;
   nav_msgs::GetMap::Response map_res_;
+  
 };
 
 } /* namespace */

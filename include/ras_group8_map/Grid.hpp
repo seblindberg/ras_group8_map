@@ -22,6 +22,10 @@ public:
              double p);
              
   static void
+    drawCircle(nav_msgs::OccupancyGrid& grid,
+               double x, double y, double r, double p);
+             
+  static void
     drawPoint(nav_msgs::OccupancyGrid& grid,
               double x, double y, double p);
 

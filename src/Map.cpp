@@ -16,7 +16,8 @@ Map::Map(ros::NodeHandle& node_handle,
          const std::string& map_topic,
          const std::string& get_service_topic,
          const std::string& set_service_topic,
-         const std::string& marker_topic)
+         const std::string& marker_topic,
+         const std::string& odom_topic)
     : node_handle_(node_handle),
       scale_factor_(1.0 / resolution),
       frame_id_(frame_id)
@@ -184,6 +185,7 @@ Map Map::load(ros::NodeHandle& n)
   std::string update_topic;
   std::string map_topic;
   std::string marker_topic;
+  std::string odom_topic;
   std::string frame_id;
   int width;
   int height;
@@ -205,6 +207,7 @@ Map Map::load(ros::NodeHandle& n)
   service_topic = n.param("service_topic", std::string("map"));
   update_topic  = n.param("update_topic",  std::string("update"));
   marker_topic  = n.param("marker_topic",  std::string("markers"));
+  odom_topic    = n.param("odom_topic",    std::string("odom"));
   
   Map map(n, width,
              height,
@@ -213,7 +216,8 @@ Map Map::load(ros::NodeHandle& n)
              map_topic,
              service_topic,
              update_topic,
-             marker_topic);
+             marker_topic,
+             odom_topic);
   
   return map;
 }
