@@ -208,13 +208,16 @@ Grid::drawPoint(nav_msgs::OccupancyGrid& grid,
 void
 Grid::drawMarkerArray(nav_msgs::OccupancyGrid& grid,
                       const visualization_msgs::MarkerArray& marker_array,
-                      double p)
+                      double p_max)
 {
   const int num_markers = marker_array.markers.size();
   
   /* Draw the lines in the grid */
   for (int i = 0; i < num_markers; i ++) {
     const visualization_msgs::Marker* marker = &marker_array.markers[i];
+    const double rcomp = (marker->color).r;
+    const double p = std::max(rcomp, p_max);
+    ROS_INFO("p is %f, at pos %f %f", p, marker->pose.position.x, marker->pose.position.y);
     
     switch (marker->type) {
       case 2:
@@ -620,8 +623,11 @@ gridCellAt(int row, int col, const nav_msgs::OccupancyGrid& grid)
 void
 plot(int row, int col, double p, nav_msgs::OccupancyGrid& grid)
 {
-  ROS_ASSERT(p >= 0.0 && p <= 1.0);
-    
+  //ROS_INFO("p inside is %f, pos at %d %d ", p,row,col);
+  //ROS_ASSERT(p >= 0.0 && p <= 1.0);
+  
+  if(p >= 0.0 && p <= 1.0)
+  {
   int cell_index = gridCellAt(row, col, grid);
   char q = p * 100.0;
   
@@ -630,6 +636,7 @@ plot(int row, int col, double p, nav_msgs::OccupancyGrid& grid)
   }
   
   grid.data[cell_index] = q;
+}
 }
 
 void

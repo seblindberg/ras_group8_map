@@ -115,7 +115,11 @@ bool Map::setMapServiceCallback(nav_msgs::SetMap::Request&  req,
 void
 Map::markerArrayCallback(const visualization_msgs::MarkerArray& marker_array)
 {
+  ROS_INFO("Received markers");
   Grid::drawMarkerArray(map_res_.map, marker_array, 0.9);
+  
+  /* Publish the updated map */
+  map_publisher_.publish(map_res_.map);
 }
 
 void
